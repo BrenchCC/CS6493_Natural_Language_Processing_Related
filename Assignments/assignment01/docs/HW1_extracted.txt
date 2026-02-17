@@ -1,0 +1,158 @@
+               CS6493: Natural Language Processing - Assignment 1
+      Instructions
+        1. Due at 10 pm, Mar. 11, 2026;
+        2. You can submit your answers by a  single  PDF  with  the  code  package or a  single  Jupiter  notebook 
+          containing both the answers and the code;
+        3. For the coding questions, besides the code, you are encouraged to additionally give some descriptions of your 
+          code design and its workflow. Detailed analysis of the experimental results is also preferred;
+        4. Total marks are 100;
+        5. If  you  have  any  questions,  please  post  your  questions  on  the  Canvas-Discussion  forum  or  contact  TA  Mr. 
+          Junyi ZHOU (junyizhou8-c@my.cityu.edu.hk).
+                                        1
+       Question 1
+       (11 marks) We could represent the word with one-hot encoding in a language model instead of ascii representations.
+       That is, we represent the word w with:
+                                          ∥V∥
+                                      z    }|   {
+                                      [0,0,...,1,...,0,0]
+         where V is our vocabulary and ∥V∥ is the size of it. Consider a vocabulary V = {cat,dog,run,runs}.
+        1. Representation Construction (2 points)
+          Write the standard one-hot vector representation for each word in V, assuming words are ordered lexicographi-
+          cally.
+        2. Inner Product and Similarity (3 points)
+          Compute the dot product between the one-hot vectors of any two distinct words.
+          What does this result imply about semantic similarity under one-hot encoding? Why is this problematic for
+          modeling linguistic relationships?
+        3. Parameter EfÏciency (3 points)
+          Suppose these one-hot vectors are used as input to a linear layer with weight matrix W ∈ R4×d, where d = 128.
+          How many parameters are required to represent the entire embedding table for V?
+          If the vocabulary size grows to |V| = 50,000, how many parameters would be needed? List two practical issues
+          this scaling causes.
+        4. Failure to Capture Morphology (2 points)
+          The words run and runs exhibit a clear morphological relationship (verb inflection).
+          Can this relationship be automatically recognized from their one-hot representations? Why or why not?
+          What challenge does this pose for generalizing to unseen inflected forms (e.g., from jump to jumps)?
+                                           2
+               Question 2
+               (24 marks) In the field of NLP, for a sequence of text S = {w1,w2,...,wT}, the statistical language model transforms
+               the joint probability of a sequence into a product of conditional probabilities:
+                                                                                                       T
+                                                             P(S)=P(w ,w ,...,w ) = Yp(w |w ,w ,...,w                                   )
+                                                                               1    2         T                 t   1     2        t−1
+                                                                                                      t=1
+                    However, this formulation is not useful in practice due to the huge computational costs. We prefer to use its
+               simplified version - the n-gram model:
+                                                                  p(w |w ,w ,...,w             ) ≈ p(w |w             , ..., w     )
+                                                                       t   1     2        t−1             t   t−n+1            t−1
+               Weusually use bi-gram (n=2) or tri-gram (n=3) to model the language. Consider the sentence:
+                       “I am taking CS6493 this semester and studying NLP is really fascinating”
+               Assume words are separated by whitespace and punctuation is ignored.
+                   1. n-gram Context Extraction and Sparsity Analysis (8 points)
+                          a. List all bigrams where the second word is either CS6493 or NLP.
+                          b. List all trigrams where the third word is either CS6493 or NLP.
+                   2. Critical Evaluation of n-gram Models (6 points)
+                          a. Explain why n-gram models cannot generalize to novel sequences composed of known words.
+                          b. Discuss how the Markov assumption limits the modeling of long-range dependencies. Provide a concrete
+                              example where this causes failure.
+                          c. Why do n-gram models require large corpora to perform well? Relate your answer to the curse of dimen-
+                              sionality.
+                   3. Neural Language Model Design and Parameter Sensitivity (10 points)
+                       The following PyTorch code defines a neural language model:
+                       class LanguageModeler(nn.Module):
+                               def         i n i t     ( self ,      vocab size , embedding dim , context size , hidden size=128):
+                                       super(LanguageModeler , self ).                              i n i t     ()
+                                       self . embeddings = nn.Embedding(vocab size , embedding dim)
+                                       self . linear1 = nn. Linear(context size ∗ embedding dim , hidden size)
+                                       self . linear2 = nn. Linear(hidden size , vocab size)
+                               def forward(self , inputs ):
+                                       embeds = self .embeddings(inputs ).view((1, −1))
+                                       out = F. relu( self . linear1 (embeds))
+                                       out = self . linear2(out)
+                                       log probs = F.log softmax(out , dim=1)
+                                       return log probs
+                       You aim to train a four-gram model (predict next word from previous three) on the given sentence for 10
+                       epochs.
+                          a. Describehowyouwouldpreprocessthesentencetogeneratetrainingexamplesoftheform(w                                                           , w      , w     ) →
+                              w.                                                                                                                                 t−3     t−2      t−1
+                                t
+                          b. Write a minimal training loop (pseudocode or Python) that trains the model for one epoch using the
+                              generated data.
+                          c. Compare the expected training dynamics (e.g., loss convergence) when using embedding dimensions of 32,
+                              64, and 128. Discuss trade-offs in capacity, generalization, and computational cost.
+                                                                                                  3
+            Question 3                (45 marks)
+            Training word embeddings can be achieved through different approaches. Two popular methods are Word2Vec and
+            GloVe (Global Vectors for Word Representation). While Word2Vec learns word embeddings by predicting context
+            words from a target word (Skip-gram) or predicting a target word from its context (CBOW), GloVe learns embeddings
+            by factorizing the global word co-occurrence matrix.
+            Word2Vec Skip-gram
+            Word2VecSkip-gram learns word embeddings by maximizing the probability of observing context words given a target
+            word. In practice, negative sampling is commonly used to efÏciently approximate the softmax objective.
+                Given a target word w and a context word w , the negative sampling objective is:
+                                          i                          o
+                                                                          K
+                                                            ⊤           X                          ⊤      
+                                               L=logσ u v             +      E             logσ −u v           ,
+                                                             w wi              w ∼P (w)              w wi
+                                                               o                k   n                  k
+                                                                         k=1
+            where vw denotes the input (target) word embedding, uw denotes the output (context) word embedding, K is the
+            number of negative samples, σ(·) is the sigmoid function, and P (w) is the noise distribution.
+                                                                                      n
+            GloVe
+            GloVe minimizes the weighted least squares objective on the global word–word co-occurrence matrix:
+                                                            V                                        
+                                                           X               ⊤             ˜              2
+                                                     J =        f(X ) w w˜ +b +b −logX                   ,
+                                                                     ij    i   j     i    j         ij
+                                                          i,j=1
+            where Xij is the number of times word j occurs in the context of word i, f(·) is a weighting function that helps prevent
+                                                                                                                         ˜
+            very frequent co-occurrences from dominating, and w ,w˜ are word vectors with bias terms b ,b .
+                                                                          i   j                                        i   j
+            Tasks
+               1. Train a Word2Vec Skip-gram model with negative sampling on the provided wiki corpus.txt. Use appro-
+                  priate hyperparameters such as embedding dimension, window size, and negative sampling rate.                                  (15
+                  marks)
+               2. Train a GloVe model on the same wiki corpus.txt. Students may either implement the algorithm from
+                  scratch or use existing GloVe implementations or libraries with comparable hyperparameters (same embedding
+                  dimension and context window as your Skip-gram model).                                                               (15 marks)
+               3. Compare and evaluate the quality of the two models:
+                      • Performqualitativeevaluationbyexaminingnearestneighborsforselectedwords(e.g., “Australia”, “YMCA”,
+                        “South”, “building”).
+                      • Investigate the effect of at least one hyperparameter (e.g., embedding dimension: 50, 100, 200, or context
+                        window size: 2, 5, 10) on the learned embeddings.
+                                                                                                                                       (15 marks)
+                                                                               4
+      Question 4
+      (20 marks) Splitting a text into smaller chunks is a task that is harder than it looks, and there are multiple ways of
+      doing so.
+        1. Simple space tokenization has limitations when processing certain types of text. From the examples below, select
+         at least TWO cases and explain why space tokenization would be problematic for each. (5 marks)
+           • Compound words (e.g., “state-of-the-art”)
+           • Contractions (e.g., “don’t”, “we’re”)
+           • URLs/emails (e.g., “user@email.com”)
+           • Hashtags (e.g., “#MachineLearning”)
+           • Numbers with units (e.g., “3.14km”)
+        2. Transformers models use a hybrid approach between word-level and character-level tokenization called subword
+         tokenization. BPE(Byte-Pair Encoding) is a subword-level tokenization approach introduced in Neural Machine
+         Translation of Rare Words with Subword Units (Sennrich et al., 2015). . BPE relies on a pre-tokenizer that
+         splits the training data into words. Pretokenization can be as simple as space tokenization. Let us assume that
+         after pre-tokenization, the following set of words including their frequency has been determined:
+                         (old,10),(older,5),(oldest,8),(hug,8),(pug,4),(hugs,5)
+         Weobtain an base vocabulary:
+                                   o,l,d,e,r,s,t,h,u,g,p
+         Splitting all words into symbols in the base vocabulary, we obtain:
+                    (o,l,d,10),(o,l,d,e,r,5),(o,l,d,e,s,t,8),(h,u,g,8),(p,u,g,4),(h,u,g,s,5)
+         BPEthencountsthefrequencyofeachpossiblesymbolpairandpicksthesymbolpairthatoccursmostfrequently.
+         In the above example,“o” followed by “l” is present 10+5+8 = 23 times. Thus, the first merge rule the tokenizer
+         learns is to group all “o” symbols followed by an “l” symbol together. Next, “ol” is added to the vocabulary.
+         The set of words then becomes:
+                     (ol,d,10),(ol,d,e,r,5),(ol,d,e,s,t,8),(h,u,g,8),(p,u,g,4),(h,u,g,s,5)
+         This process will run iteratively. The vocabulary size, i.e. the base vocabulary size + the number of merges,
+         is a hyperparameter to choose. The learned merge rules would then be applied to new words (as long as those
+         new words do not include symbols that were not in the base vocabulary). The word not in the base vocabulary
+         would be repersented as “[unk]”. Implement this BPE tokenizer, set the vocabulary size as 16 and train this
+         BPEtokenizer to finish the iterative proecss. Use the trained tokenizer to tokenize the words below:(15 marks)
+                             {hold,oldest,older,pug,mug,huggingface}.
+                                        5
