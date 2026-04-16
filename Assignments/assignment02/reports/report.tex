@@ -1,0 +1,290 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+
+\input{Assignments/assignment02/reports/generated/results_macros.tex}
+
+\title{CS6493 Natural Language Processing\\Assignment 02 Report}
+\author{Chen Baizheng (72510800)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section*{Question 1 (20 marks)}
+
+\subsection*{1) Padding and indexing in batched training}
+The vocabulary mapping is fixed by the assignment statement. After tokenization by whitespace:
+\begin{itemize}[leftmargin=1.2em]
+    \item Sentence 1: \texttt{I like cats and dogs} $\rightarrow$ \texttt{[4, 7, 10, 17, 11]}
+    \item Sentence 2: \texttt{She enjoys reading books and playing video games} $\rightarrow$ \texttt{[5, 8, 12, 13, 17, 18, 19, 20]}
+    \item Sentence 3: \texttt{They play football every weekend} $\rightarrow$ \texttt{[6, 9, 14, 15, 16]}
+\end{itemize}
+
+The longest sequence length is 8, so right padding with 0 yields:
+\begin{itemize}[leftmargin=1.2em]
+    \item Sentence 1 padded: \texttt{\QOneSentenceOneIndices}
+    \item Sentence 2 padded: \texttt{\QOneSentenceTwoIndices}
+    \item Sentence 3 padded: \texttt{\QOneSentenceThreeIndices}
+\end{itemize}
+
+This shape alignment is required for vectorized mini-batch computation in embedding lookup and subsequent matrix operations.
+
+\subsection*{2) Word embeddings}
+\textbf{(a) Definition.}
+A word embedding is a dense continuous vector representation $e_w \in \mathbb{R}^d$ for token $w$, where vector geometry (distance and direction) is optimized to encode distributional behavior.
+
+\textbf{(b) Advantage over one-hot.}
+One-hot vectors are orthogonal and sparse, so all non-identical words are equally dissimilar under dot product. Embeddings support graded similarity and parameter sharing, which improves generalization to low-frequency and unseen contexts.
+
+\subsection*{3) Greedy search vs beam search}
+Figure~\ref{fig:decode-tree} gives the decoding tree.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.84\textwidth]{Assignments/assignment02/docs/figure1.png}
+    \caption{Decoding tree for Q1.3.}
+    \label{fig:decode-tree}
+\end{figure}
+
+\textbf{(a) Greedy search.}
+Greedy selects the locally largest probability at each step:
+\[
+\texttt{start} \rightarrow \texttt{yes}(0.5) \rightarrow \texttt{yes}(0.4) \rightarrow \texttt{</s>}(1.0)
+\]
+Path probability:
+\[
+P_{\text{greedy}} = 0.5 \times 0.4 \times 1.0 = \QOneGreedyProb.
+\]
+Sequence: \texttt{\QOneGreedySequence}.
+
+\textbf{(b) Beam search with $k=2$.}
+\begin{itemize}[leftmargin=1.2em]
+    \item Step 1 (keep top-2): \texttt{yes} $(0.5)$, \texttt{ok} $(0.4)$.
+    \item Step 2 expand all candidates:
+    \[
+    \begin{aligned}
+    &\texttt{yes yes}: 0.5\times0.4=0.20,\quad \texttt{yes ok}: 0.5\times0.3=0.15,\\
+    &\texttt{yes </s>}: 0.5\times0.3=0.15,\quad \texttt{ok ok}: 0.4\times0.7=0.28,\\
+    &\texttt{ok yes}: 0.4\times0.2=0.08,\quad \texttt{ok </s>}: 0.4\times0.1=0.04.
+    \end{aligned}
+    \]
+    \item Keep top-2: \texttt{ok ok} $(0.28)$ and \texttt{yes yes} $(0.20)$.
+    \item Final step appends \texttt{</s>} with probability 1.0 for both.
+\end{itemize}
+Best beam sequence is \texttt{\QOneBeamSequence} with probability \QOneBeamProb.
+
+\textbf{(c) Why beam can outperform greedy.}
+Greedy commits to a single local optimum early. Beam search preserves multiple high-probability prefixes, which reduces irreversible early mistakes and improves approximate global search quality.
+
+\subsection*{4) BLEU calculation}
+Using BLEU-4~\cite{papineni2002bleu} with uniform weights $w_n=1/4$:
+\[
+\mathrm{BLEU} = \mathrm{BP}\cdot \exp\left(\frac{1}{4}\sum_{n=1}^{4}\ln P_n\right)
+\]
+where $P_n$ is clipped n-gram precision and BP is brevity penalty.
+
+From the code-based count verification:
+\[
+P_1 = \QOneBleuPone,\quad P_2 = \QOneBleuPtwo,\quad P_3 = \QOneBleuPthree,\quad P_4 = \QOneBleuPfour.
+\]
+Candidate length equals the closest reference length, so
+\[
+\mathrm{BP} = \QOneBleuBP.
+\]
+Therefore,
+\[
+\mathrm{BLEU} = \QOneBleuScore.
+\]
+Interpretation: lexical overlap is strong on unigrams/bigrams, while higher-order precision drops as expected due to phrase-level mismatch (e.g., \texttt{wooden table} vs \texttt{wooden chair}/\texttt{leather chair}).
+
+\section*{Question 2 (20 marks)}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.54\textwidth]{Assignments/assignment02/docs/figure2.png}
+    \caption{Transformer architecture~\cite{vaswani2017attention}.}
+    \label{fig:transformer}
+\end{figure}
+
+\subsection*{1) Constraint analysis under $W^Q=W^K$ and $V=K$}
+Given
+\[
+Q = XW^Q,\quad K = XW^K,\quad V = XW^V,
+\]
+if $W^Q=W^K=W$, then
+\[
+S = QK^\top = (XW)(XW)^\top.
+\]
+So $S$ has two key properties:
+\begin{itemize}[leftmargin=1.2em]
+    \item Symmetry: $S_{ij}=S_{ji}$.
+    \item Positive semidefinite Gram form.
+\end{itemize}
+Numerical verification from the reproducible code gives
+\[
+\max_{i,j}|S_{ij}-S_{ji}| = \QTwoSymmetryDiff.
+\]
+
+\textbf{Directional limitation.}
+Because $S$ is symmetric, the mechanism cannot directly express asymmetric relational intensity (e.g., token $i$ strongly depends on token $j$ but not vice versa) at the score level.
+
+\textbf{Additional constraint $V=K$.}
+Keys and values serve different roles (addressing vs transmitted content). Enforcing $V=K$ couples these roles, reducing representational flexibility and the model's ability to decouple retrieval criterion from output content space.
+
+\subsection*{2) Behavior as scaling coefficient $\beta$ changes}
+For
+\[
+\alpha_i = \frac{\exp(\beta q^\top k_i)}{\sum_j\exp(\beta q^\top k_j)},\qquad
+c = \sum_i \alpha_i v_i,
+\]
+we analyze two limits:
+
+\textbf{(i) $\beta \to 0$.}
+A first-order expansion of softmax logits gives near-equal weights:
+\[
+\alpha_i \to \frac{1}{n},
+\]
+thus
+\[
+c \to \frac{1}{n}\sum_i v_i,
+\]
+which is the arithmetic mean of values.
+
+\textbf{(ii) $\beta \to \infty$.}
+Softmax becomes a hard selection over maximal logit index:
+\[
+\alpha \to \text{one-hot at } \arg\max_i\, q^\top k_i.
+\]
+In the reproducible numeric example, argmax index is \QTwoArgmaxIndex, so context converges to the corresponding value vector (or a mixture under exact ties).
+
+\subsection*{3) Causal mask placement and explicit mask}
+Masked decoder attention uses
+\[
+A = \mathrm{softmax}\left(\frac{QK^\top + M}{\sqrt{d_k}}\right),\qquad O = AV.
+\]
+
+\textbf{Why add mask before softmax.}
+Setting future logits to $-\infty$ before softmax ensures:
+\begin{itemize}[leftmargin=1.2em]
+    \item masked positions receive exact probability 0,
+    \item remaining valid positions are properly renormalized,
+    \item gradients do not leak into forbidden future positions.
+\end{itemize}
+If zeroing happens after softmax, invalid positions already consumed probability mass and distort optimization.
+
+For $n=4$, the required causal mask is:
+\[
+M =
+\begin{bmatrix}
+0 & -\infty & -\infty & -\infty \\
+0 & 0 & -\infty & -\infty \\
+0 & 0 & 0 & -\infty \\
+0 & 0 & 0 & 0
+\end{bmatrix}.
+\]
+
+\section*{Question 3 (30 marks)}
+
+\subsection*{1) NLU vs NLG}
+NLU maps language input to meaning-level structures or task decisions; NLG maps internal representations/intent to fluent language output.
+
+\textbf{NLU examples:}
+\begin{itemize}[leftmargin=1.2em]
+    \item Sentiment classification.
+    \item Extractive reading comprehension.
+\end{itemize}
+
+\textbf{NLG examples:}
+\begin{itemize}[leftmargin=1.2em]
+    \item Machine translation.
+    \item Abstractive summarization.
+\end{itemize}
+
+\subsection*{2) Classification type identification}
+\begin{itemize}[leftmargin=1.2em]
+    \item (a) Spam detection: \textbf{binary classification}.
+    \item (b) Exactly one section from five classes: \textbf{single-label multi-class classification}.
+    \item (c) Multiple applicable taxonomy labels: \textbf{multi-label classification}.
+    \item (d) Ordered rating scale: \textbf{ordinal classification}.
+\end{itemize}
+
+\subsection*{3) Reading comprehension and SQuAD}
+\textbf{(a)} In SQuAD-style extractive QA, the model predicts the start/end positions of an answer span directly from the passage~\cite{rajpurkar2016squad}.
+
+\textbf{(b)} Two reasons SQuAD was stronger than many earlier datasets:
+\begin{itemize}[leftmargin=1.2em]
+    \item Scale and diversity: large number of QA pairs with realistic crowd-authored questions.
+    \item Evaluation clarity: exact span supervision enables objective EM/F1 benchmarking.
+\end{itemize}
+
+\textbf{(c)} SQuAD 2.0 requires explicit answerability judgment (abstain/no-answer decision) with confidence calibration, not only span extraction~\cite{rajpurkar2018squad2}.
+
+\subsection*{4) Decoding and BLEU}
+\textbf{(a)} Greedy decoding chooses the maximum-probability next token at each step; drawback: myopic decisions and error accumulation.
+
+\textbf{(b)} Exhaustive search is computationally infeasible because complexity grows exponentially with output length.
+
+\textbf{(c)} Beam search keeps top-$k$ partial hypotheses each step; $k$ controls breadth/exploration. Length normalization reduces bias toward short hypotheses under product-of-probabilities scoring.
+
+\textbf{(d)} BLEU components discourage different failure modes:
+\begin{itemize}[leftmargin=1.2em]
+    \item n-gram precision discourages unrelated or hallucinated content.
+    \item brevity penalty discourages overly short outputs that trivially achieve precision.
+\end{itemize}
+
+\subsection*{5) Two heuristic automatic metrics}
+\begin{itemize}[leftmargin=1.2em]
+    \item ROUGE~\cite{lin2004rouge}: overlap-based content coverage (often recall-oriented in summarization).
+    \item BERTScore~\cite{zhang2020bertscore}: contextual semantic similarity using pretrained embedding alignment.
+\end{itemize}
+
+\section*{Question 4 (30 marks)}
+
+\subsection*{1) Campus assistant system design (15 marks)}
+\textbf{System components.}
+\begin{itemize}[leftmargin=1.2em]
+    \item \textbf{Ingestion layer}: parse PDFs/web pages/policy docs, attach semester and timestamp metadata.
+    \item \textbf{Knowledge processing}: clean, chunk, and index documents with source, section, version, and validity fields.
+    \item \textbf{Retrieval layer}: hybrid sparse+dense retrieval for robust recall.
+    \item \textbf{Reranking layer}: cross-encoder reranker for precision at top-k evidence.
+    \item \textbf{Generation layer}: LLM prompt constrained by retrieved evidence, with mandatory citation format.
+    \item \textbf{Safety layer}: confidence estimation, freshness checks, refusal policy, and escalation path to staff.
+\end{itemize}
+
+\textbf{Query-to-answer workflow.}
+\begin{enumerate}[leftmargin=1.5em]
+    \item Receive and normalize student query (spelling, aliases, temporal terms).
+    \item Detect intent/domain (registration, deadline, grading, graduation).
+    \item Retrieve candidate passages from official indexed corpus.
+    \item Rerank and retain high-confidence evidence set.
+    \item Generate draft answer grounded only in retained evidence.
+    \item Run verification checks: citation coverage, contradiction check, policy freshness.
+    \item Return either (i) cited final answer, or (ii) abstention + clarification request + escalation hint.
+\end{enumerate}
+
+\subsection*{2) Handling uncertain or missing information (15 marks)}
+\textbf{(a) Why models still answer when uncertain.}
+Autoregressive LLMs are optimized for next-token likelihood and usually instruction-tuned to be ``helpful,'' so they preferentially produce fluent continuations even under weak evidence unless explicit abstention mechanisms are enforced.
+
+\textbf{(b) Two practical reliability strategies.}
+\begin{itemize}[leftmargin=1.2em]
+    \item \textbf{Answerability-gated refusal.}
+    Define thresholds on retrieval confidence, reranker margin, and self-consistency score. If below threshold, output ``insufficient evidence'' and ask a targeted follow-up question.
+
+    \item \textbf{Evidence-constrained generation with citation checks.}
+    Force each key claim to map to retrieved passages; reject outputs with unsupported claims or stale-policy citations. This directly reduces hallucination and outdated responses.
+\end{itemize}
+
+\textbf{Operational note.}
+In production, both strategies should be monitored with refusal rate, correction rate, and user satisfaction to tune the safety-utility tradeoff.
+
+\bibliographystyle{plain}
+\bibliography{Assignments/assignment02/reports/references}
+
+\end{document}

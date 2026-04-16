@@ -1,0 +1,33 @@
+2026-04-17 00:28:30,938 - nlp_project.pipeline - INFO - ================================================================================
+2026-04-17 00:28:30,938 - nlp_project.pipeline - INFO - CS6493 NLP Project: Running layered pipeline
+2026-04-17 00:28:30,938 - nlp_project.pipeline - INFO - ================================================================================
+
+Running project tasks:   0%|          | 0/2 [00:00<?, ?it/s]2026-04-17 00:28:30,950 - nlp_project.pipeline - INFO - ------------------------------------------------------------
+2026-04-17 00:28:30,950 - nlp_project.pipeline - INFO - Running task group: q1
+2026-04-17 00:28:30,950 - nlp_project.pipeline - INFO - ------------------------------------------------------------
+
+
+Computing BLEU n-gram precisions:   0%|          | 0/4 [00:00<?, ?it/s][A
+
+                                                                       [A2026-04-17 00:28:30,950 - nlp_project.pipeline - INFO - ------------------------------------------------------------
+2026-04-17 00:28:30,950 - nlp_project.pipeline - INFO - Running task group: q2
+2026-04-17 00:28:30,950 - nlp_project.pipeline - INFO - ------------------------------------------------------------
+
+Running project tasks: 100%|██████████| 2/2 [00:00<00:00, 71.23it/s]
+2026-04-17 00:28:30,979 - nlp_project.pipeline - INFO - **************************************************
+2026-04-17 00:28:30,979 - nlp_project.pipeline - INFO - All tasks completed. Summary:
+2026-04-17 00:28:30,979 - nlp_project.pipeline - INFO - {
+  "q1": {
+    "max_length": 8,
+    "greedy_probability": 0.2,
+    "beam_probability": 0.27999999999999997,
+    "bleu": 0.7506238537503395
+  },
+  "q2": {
+    "symmetry_max_abs_diff": 0.0,
+    "argmax_index": 1,
+    "mask_n": 4
+  }
+}
+2026-04-17 00:28:30,979 - nlp_project.pipeline - INFO - **************************************************
+

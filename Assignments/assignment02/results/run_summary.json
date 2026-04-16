@@ -1,0 +1,13 @@
+{
+  "q1": {
+    "max_length": 8,
+    "greedy_probability": 0.2,
+    "beam_probability": 0.27999999999999997,
+    "bleu": 0.7506238537503395
+  },
+  "q2": {
+    "symmetry_max_abs_diff": 0.0,
+    "argmax_index": 1,
+    "mask_n": 4
+  }
+}

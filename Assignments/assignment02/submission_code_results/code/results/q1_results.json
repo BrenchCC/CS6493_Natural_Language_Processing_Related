@@ -1,0 +1,646 @@
+{
+  "padding_and_indexing": {
+    "sentences": [
+      "I like cats and dogs",
+      "She enjoys reading books and playing video games",
+      "They play football every weekend"
+    ],
+    "tokenized": [
+      [
+        "I",
+        "like",
+        "cats",
+        "and",
+        "dogs"
+      ],
+      [
+        "She",
+        "enjoys",
+        "reading",
+        "books",
+        "and",
+        "playing",
+        "video",
+        "games"
+      ],
+      [
+        "They",
+        "play",
+        "football",
+        "every",
+        "weekend"
+      ]
+    ],
+    "indexed": [
+      [
+        4,
+        7,
+        10,
+        17,
+        11
+      ],
+      [
+        5,
+        8,
+        12,
+        13,
+        17,
+        18,
+        19,
+        20
+      ],
+      [
+        6,
+        9,
+        14,
+        15,
+        16
+      ]
+    ],
+    "padded": [
+      [
+        4,
+        7,
+        10,
+        17,
+        11,
+        0,
+        0,
+        0
+      ],
+      [
+        5,
+        8,
+        12,
+        13,
+        17,
+        18,
+        19,
+        20
+      ],
+      [
+        6,
+        9,
+        14,
+        15,
+        16,
+        0,
+        0,
+        0
+      ]
+    ],
+    "max_length": 8,
+    "pad_token": 0
+  },
+  "decoding": {
+    "greedy": {
+      "sequence": [
+        "yes",
+        "yes",
+        "</s>"
+      ],
+      "probability": 0.2,
+      "steps": [
+        {
+          "prefix_after_step": [
+            "yes"
+          ],
+          "picked_token": "yes",
+          "picked_probability": 0.5,
+          "path_probability": 0.5
+        },
+        {
+          "prefix_after_step": [
+            "yes",
+            "yes"
+          ],
+          "picked_token": "yes",
+          "picked_probability": 0.4,
+          "path_probability": 0.2
+        },
+        {
+          "prefix_after_step": [
+            "yes",
+            "yes",
+            "</s>"
+          ],
+          "picked_token": "</s>",
+          "picked_probability": 1.0,
+          "path_probability": 0.2
+        }
+      ]
+    },
+    "beam": {
+      "beam_width": 2,
+      "best_sequence": [
+        "ok",
+        "ok",
+        "</s>"
+      ],
+      "best_probability": 0.27999999999999997,
+      "steps": [
+        {
+          "all_candidates": [
+            {
+              "tokens": [
+                "yes"
+              ],
+              "probability": 0.5
+            },
+            {
+              "tokens": [
+                "ok"
+              ],
+              "probability": 0.4
+            },
+            {
+              "tokens": [
+                "</s>"
+              ],
+              "probability": 0.1
+            }
+          ],
+          "kept_beams": [
+            {
+              "tokens": [
+                "yes"
+              ],
+              "probability": 0.5
+            },
+            {
+              "tokens": [
+                "ok"
+              ],
+              "probability": 0.4
+            }
+          ]
+        },
+        {
+          "all_candidates": [
+            {
+              "tokens": [
+                "ok",
+                "ok"
+              ],
+              "probability": 0.27999999999999997
+            },
+            {
+              "tokens": [
+                "yes",
+                "yes"
+              ],
+              "probability": 0.2
+            },
+            {
+              "tokens": [
+                "yes",
+                "ok"
+              ],
+              "probability": 0.15
+            },
+            {
+              "tokens": [
+                "yes",
+                "</s>"
+              ],
+              "probability": 0.15
+            },
+            {
+              "tokens": [
+                "ok",
+                "yes"
+              ],
+              "probability": 0.08000000000000002
+            },
+            {
+              "tokens": [
+                "ok",
+                "</s>"
+              ],
+              "probability": 0.04000000000000001
+            }
+          ],
+          "kept_beams": [
+            {
+              "tokens": [
+                "ok",
+                "ok"
+              ],
+              "probability": 0.27999999999999997
+            },
+            {
+              "tokens": [
+                "yes",
+                "yes"
+              ],
+              "probability": 0.2
+            }
+          ]
+        },
+        {
+          "all_candidates": [
+            {
+              "tokens": [
+                "ok",
+                "ok",
+                "</s>"
+              ],
+              "probability": 0.27999999999999997
+            },
+            {
+              "tokens": [
+                "yes",
+                "yes",
+                "</s>"
+              ],
+              "probability": 0.2
+            }
+          ],
+          "kept_beams": [
+            {
+              "tokens": [
+                "ok",
+                "ok",
+                "</s>"
+              ],
+              "probability": 0.27999999999999997
+            },
+            {
+              "tokens": [
+                "yes",
+                "yes",
+                "</s>"
+              ],
+              "probability": 0.2
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "bleu": {
+    "candidate": "A small cat is sitting on the wooden table.",
+    "references": [
+      "A little cat is sitting on the leather chair.",
+      "A small cat is sitting on a wooden chair."
+    ],
+    "candidate_tokens": [
+      "a",
+      "small",
+      "cat",
+      "is",
+      "sitting",
+      "on",
+      "the",
+      "wooden",
+      "table"
+    ],
+    "reference_tokens": [
+      [
+        "a",
+        "little",
+        "cat",
+        "is",
+        "sitting",
+        "on",
+        "the",
+        "leather",
+        "chair"
+      ],
+      [
+        "a",
+        "small",
+        "cat",
+        "is",
+        "sitting",
+        "on",
+        "a",
+        "wooden",
+        "chair"
+      ]
+    ],
+    "precisions": [
+      {
+        "order": 1,
+        "clipped_matches": 8,
+        "total_candidate_ngrams": 9,
+        "precision": 0.8888888888888888,
+        "details": [
+          {
+            "ngram": [
+              "a"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 2,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "small"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "cat"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "is"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "sitting"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "on"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "the"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "wooden"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "table"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 0,
+            "clipped_count": 0
+          }
+        ]
+      },
+      {
+        "order": 2,
+        "clipped_matches": 6,
+        "total_candidate_ngrams": 8,
+        "precision": 0.75,
+        "details": [
+          {
+            "ngram": [
+              "a",
+              "small"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "small",
+              "cat"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "cat",
+              "is"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "is",
+              "sitting"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "sitting",
+              "on"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "on",
+              "the"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "the",
+              "wooden"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 0,
+            "clipped_count": 0
+          },
+          {
+            "ngram": [
+              "wooden",
+              "table"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 0,
+            "clipped_count": 0
+          }
+        ]
+      },
+      {
+        "order": 3,
+        "clipped_matches": 5,
+        "total_candidate_ngrams": 7,
+        "precision": 0.7142857142857143,
+        "details": [
+          {
+            "ngram": [
+              "a",
+              "small",
+              "cat"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "small",
+              "cat",
+              "is"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "cat",
+              "is",
+              "sitting"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "is",
+              "sitting",
+              "on"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "sitting",
+              "on",
+              "the"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "on",
+              "the",
+              "wooden"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 0,
+            "clipped_count": 0
+          },
+          {
+            "ngram": [
+              "the",
+              "wooden",
+              "table"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 0,
+            "clipped_count": 0
+          }
+        ]
+      },
+      {
+        "order": 4,
+        "clipped_matches": 4,
+        "total_candidate_ngrams": 6,
+        "precision": 0.6666666666666666,
+        "details": [
+          {
+            "ngram": [
+              "a",
+              "small",
+              "cat",
+              "is"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "small",
+              "cat",
+              "is",
+              "sitting"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "cat",
+              "is",
+              "sitting",
+              "on"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "is",
+              "sitting",
+              "on",
+              "the"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 1,
+            "clipped_count": 1
+          },
+          {
+            "ngram": [
+              "sitting",
+              "on",
+              "the",
+              "wooden"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 0,
+            "clipped_count": 0
+          },
+          {
+            "ngram": [
+              "on",
+              "the",
+              "wooden",
+              "table"
+            ],
+            "candidate_count": 1,
+            "reference_max_count": 0,
+            "clipped_count": 0
+          }
+        ]
+      }
+    ],
+    "candidate_length": 9,
+    "reference_lengths": [
+      9,
+      9
+    ],
+    "closest_reference_length": 9,
+    "brevity_penalty": 1.0,
+    "geometric_mean": 0.7506238537503395,
+    "bleu": 0.7506238537503395
+  }
+}
